@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generate PPT</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f8f6fc;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      padding: 1rem;
+    }
+
+    .container-fluid {
+      background: #f3e5f5; /* pastel lavender */
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+    }
+
+    h5 {
+      color: #4a148c;
+      font-weight: 600;
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    input, select, button {
+      font-size: 0.85rem;
+    }
+
+    input[type="file"] {
+      padding: 3px;
+    }
+
+    .preview-img {
+      max-width: 100px;
+      max-height: 80px;
+      margin: 5px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .btn-generate {
+      font-size: 0.9rem;
+      padding: 6px 14px;
+    }
+
+    .section-box {
+      background: #e8eaf6; /* lighter pastel */
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5>Generate PPT</h5>
+    
+  </div>
+
+  <!-- Section 1: Select Folder to upload Tank Photos -->
+  <div class="section-box">
+    <h6>1. Select Folder for Photos</h6>
+    <input type="file" id="photoFolder" webkitdirectory directory multiple onchange="previewImages(event)">
+    <small class="text-muted d-block mt-1">Select a folder containing images (.jpg, .png).</small>
+  </div>
+
+  <!-- Section 2: Uploaded Images Preview in small icons -->
+  <div class="section-box">
+    <h6>2. Uploaded Images Preview in small icons </h6>
+    <div class="image-preview" id="imagePreview"></div>
+  </div>
+
+   <!-- Section 4: PPT Structure Info -->
+  <div class="section-box">
+    <h6>4. PPT Structure</h6>
+    <ul class="mb-0">
+      <li>First 3 slides: Tank Master data (Tank Number, MFGR, Date MFG, etc.)</li>
+      <li>Next slides: Each uploaded image as a slide with file name as heading</li>
+      <li>Final slides: Tank master data at the end of presentation</li>
+    </ul>
+  </div>
+
+  <div class="text-center mt-3">
+    <button class="btn btn-success btn-generate" onclick="generatePPT()">
+      <i class="fa fa-file-powerpoint"></i> Generate PPT
+    </button>
+  </div>
+</div>
+
+<script>
+  function previewImages(event) {
+    const files = event.target.files;
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = ''; // Clear existing previews
+
+    Array.from(files).forEach(file => {
+      if(file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'preview-img';
+          img.title = file.name;
+          preview.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  function generatePPT() {
+    alert('PPT generation functionality will be implemented with back-end or client-side scripting.');
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
