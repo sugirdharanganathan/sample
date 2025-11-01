@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tank Management</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>ISO Tank Management</h2>
+    <div class="toolbar">
+      <button class="btn" id="btnNewTank">+ New Tank</button>
+    </div>
+
+    <table class="table" id="tankTable">
+      <thead>
+        <tr>
+          <th>Tank Number</th>
+          <th>PV Code</th>
+          <th>UN/ISO Code</th>
+          <th>Capacity (L)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="modal" id="addModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <div class="modal-title">Add / Edit Tank</div>
+        <button class="close-btn" id="closeAddBtn" aria-label="Close">✖</button>
+      </div>
+
+      <form id="addForm" novalidate>
+        <input type="hidden" id="add_tank_id" />
+        <div class="tabs" role="tablist" aria-label="Tank tabs">
+          <button type="button" class="tab-btn active" data-tab="tank">Tank</button>
+          <button type="button" class="tab-btn" data-tab="regulations">Regulations</button>
+          <button type="button" class="tab-btn" data-tab="cargo">Cargo</button>
+          <button type="button" class="tab-btn" data-tab="certificate">Certificate</button>
+          <button type="button" class="tab-btn" data-tab="drawing">Drawing</button>
+          <button type="button" class="tab-btn" data-tab="valve">Valve</button>
+        </div>
+
+        <div class="tab-content active" id="tank">
+          <div class="note">All fields marked required map to the backend required fields.</div>
+
+          <div class="row">
+            <div class="col field">
+              <label for="add_tank_number">Tank Number *</label>
+              <input id="add_tank_number" name="tank_number" required />
+            </div>
+            <div class="col field" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="add_lease" name="lease" />
+              <label for="add_lease" style="margin:0;color:var(--muted);font-weight:600;font-size:13px;">Lease</label>
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="field">
+              <label for="add_mfgr">Manufacturer *</label>
+              <input id="add_mfgr" name="mfgr" required />
+            </div>
+            <div class="field">
+              <label for="add_date_mfg">Date MFG</label>
+              <input id="add_date_mfg" name="date_mfg" type="date" />
+            </div>
+            <div class="field">
+              <label for="add_pv_code">PV Code *</label>
+              <input id="add_pv_code" name="pv_code" required />
+            </div>
+            <div class="field">
+              <label for="add_un_iso_code">UN/ISO Code *</label>
+              <input id="add_un_iso_code" name="un_iso_code" required />
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="field">
+              <label for="add_capacity_l">Capacity (L) *</label>
+              <input id="add_capacity_l" name="capacity_l" type="number" step="0.01" min="0" required />
+            </div>
+            <div class="field">
+              <label for="add_mawp">MAWP (bar) *</label>
+              <input id="add_mawp" name="mawp" type="number" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="add_design_temperature">Design Temperature (°C)</label>
+              <input id="add_design_temperature" name="design_temperature" />
+            </div>
+            <div class="field">
+              <label for="add_tare_weight_kg">Tare Weight (kg) *</label>
+              <input id="add_tare_weight_kg" name="tare_weight_kg" type="number" step="0.01" required />
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="field">
+              <label for="add_mgw_kg">MGW (kg) *</label>
+              <input id="add_mgw_kg" name="mgw_kg" type="number" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="add_mpl_kg">MPL (kg) *</label>
+              <input id="add_mpl_kg" name="mpl_kg" type="number" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="add_size">ISO Size *</label>
+              <input id="add_size" name="size" required />
+            </div>
+            <div class="field">
+              <label for="add_pump_type">Pump Type *</label>
+              <input id="add_pump_type" name="pump_type" required />
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="field">
+              <label for="add_vesmat">Vessel Material *</label>
+              <input id="add_vesmat" name="vesmat" required />
+            </div>
+            <div class="field">
+              <label for="add_gross_kg">Gross Weight (kg) *</label>
+              <input id="add_gross_kg" name="gross_kg" type="number" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="add_net_kg">Net Weight (kg) *</label>
+              <input id="add_net_kg" name="net_kg" type="number" step="0.01" required />
+            </div>
+            <div class="field">
+              <label for="add_color_body_frame">Body/Frame Color *</label>
+              <input id="add_color_body_frame" name="color_body_frame" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="add_remark">Remarks</label>
+            <textarea id="add_remark" name="remark" rows="3"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="add_created_by">Created By (optional)</label>
+            <input id="add_created_by" name="created_by" />
+          </div>
+        </div>
+
+        <!-- Regulations Tab (dropdown for regs) -->
+        <div class="tab-content" id="regulations">
+          <div class="toolbar" style="justify-content:flex-end;margin-bottom:10px;">
+            <button class="btn" type="button" id="btnNewRegFromTank">+ New Regulation</button>
+          </div>
+          <div class="field" style="margin-bottom:10px;">
+            <label for="tankNumberDisplay">Tank Number</label>
+            <input id="tankNumberDisplay" readonly style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;">
+            <select id="tankSelect" style="display:none;"></select>
+          </div>
+          <h3>Select Regulation</h3>
+          <select id="regulationSelect" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;margin-bottom:10px;">
+            <option value="">Choose a regulation</option>
+          </select>
+          <textarea id="regulationText" style="display:none;width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;margin-top:10px;" rows="4" placeholder="Enter details..."></textarea>
+          <div class="footer-actions" style="margin-top:10px;">
+            <button type="button" class="btn" id="btnSaveRegulation">Save Regulation</button>
+          </div>
+
+          <!-- Regulations Table -->
+          <h3 style="margin-top:20px;">Regulations List</h3>
+          <table class="table" id="regulationsTable" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th>Regulation Name</th>
+                <th>Initial Approval No</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Cargo Tab -->
+        <div class="tab-content" id="cargo">
+          <div class="field" style="margin-bottom:10px;">
+            <label for="cargoTankNumberDisplay">Tank Number</label>
+            <input id="cargoTankNumberDisplay" readonly style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;">
+          </div>
+          <h3>Add Cargo References</h3>
+          <div class="field">
+            <label for="cargoReferences">Cargo References (comma-separated)</label>
+            <textarea id="cargoReferences" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;" rows="3" placeholder="e.g. REF001, REF002, REF003"></textarea>
+          </div>
+          <div class="footer-actions" style="margin-top:10px;">
+            <button type="button" class="btn" id="btnSaveCargo">Save Cargo References</button>
+          </div>
+
+          <!-- Cargo Table -->
+          <h3 style="margin-top:20px;">Cargo References List</h3>
+          <table class="table" id="cargoTable" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th>Cargo Reference</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="tab-content" id="certificate"><p>Certificate details placeholder.</p></div>
+        <div class="tab-content" id="drawing"><p>Drawing details placeholder.</p></div>
+        <div class="tab-content" id="valve"><p>Valve details placeholder.</p></div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn-ghost btn" id="cancelAdd">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Regulation Modal (add/edit regulations) -->
+  <div class="modal" id="regModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <div class="modal-title" id="regModalTitle">Add Regulation</div>
+        <button class="close-btn" id="closeRegBtn" aria-label="Close">✖</button>
+      </div>
+      <form id="regForm" novalidate>
+        <input type="hidden" id="reg_id" />
+        <div class="field">
+          <label for="reg_name">Regulation Name *</label>
+          <input id="reg_name" required />
+        </div>
+        <div class="footer-actions">
+          <button type="button" class="btn-ghost btn" id="cancelReg">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Tank Modal (separate edit form) -->
+  <div class="modal" id="editModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <div class="modal-title">Edit Tank</div>
+        <button class="close-btn" id="closeEditBtn" aria-label="Close">✖</button>
+      </div>
+      <form id="editForm" autocomplete="off">
+        <input type="hidden" id="edit_id" name="id" />
+        <div class="note">Edit the fields you want to update. All backend keys are used as-is.</div>
+
+        <div class="row">
+          <div class="col field">
+            <label for="edit_tank_number">Tank Number *</label>
+            <input id="edit_tank_number" name="tank_number" required />
+          </div>
+          <div class="col field" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="edit_lease" name="lease" />
+            <label for="edit_lease" style="margin:0;color:var(--muted);font-weight:600;font-size:13px;">Lease</label>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="field"><label for="edit_mfgr">Manufacturer *</label><input id="edit_mfgr" name="mfgr" required /></div>
+          <div class="field"><label for="edit_date_mfg">Date MFG</label><input id="edit_date_mfg" name="date_mfg" type="date" /></div>
+          <div class="field"><label for="edit_pv_code">PV Code *</label><input id="edit_pv_code" name="pv_code" required /></div>
+          <div class="field"><label for="edit_un_iso_code">UN/ISO Code *</label><input id="edit_un_iso_code" name="un_iso_code" required /></div>
+        </div>
+
+        <div class="grid-4">
+          <div class="field"><label for="edit_capacity_l">Capacity (L) *</label><input id="edit_capacity_l" name="capacity_l" type="number" step="0.01" min="0" required /></div>
+          <div class="field"><label for="edit_mawp">MAWP (bar) *</label><input id="edit_mawp" name="mawp" type="number" step="0.01" required /></div>
+          <div class="field"><label for="edit_design_temperature">Design Temperature (°C)</label><input id="edit_design_temperature" name="design_temperature" /></div>
+          <div class="field"><label for="edit_tare_weight_kg">Tare Weight (kg) *</label><input id="edit_tare_weight_kg" name="tare_weight_kg" type="number" step="0.01" required /></div>
+        </div>
+
+        <div class="grid-4">
+          <div class="field"><label for="edit_mgw_kg">MGW (kg) *</label><input id="edit_mgw_kg" name="mgw_kg" type="number" step="0.01" required /></div>
+          <div class="field"><label for="edit_mpl_kg">MPL (kg) *</label><input id="edit_mpl_kg" name="mpl_kg" type="number" step="0.01" required /></div>
+          <div class="field"><label for="edit_size">ISO Size *</label><input id="edit_size" name="size" required /></div>
+          <div class="field"><label for="edit_pump_type">Pump Type *</label><input id="edit_pump_type" name="pump_type" required /></div>
+        </div>
+
+        <div class="grid-4">
+          <div class="field"><label for="edit_vesmat">Vessel Material *</label><input id="edit_vesmat" name="vesmat" required /></div>
+          <div class="field"><label for="edit_gross_kg">Gross Weight (kg) *</label><input id="edit_gross_kg" name="gross_kg" type="number" step="0.01" required /></div>
+          <div class="field"><label for="edit_net_kg">Net Weight (kg) *</label><input id="edit_net_kg" name="net_kg" type="number" step="0.01" required /></div>
+          <div class="field"><label for="edit_color_body_frame">Body/Frame Color *</label><input id="edit_color_body_frame" name="color_body_frame" required /></div>
+        </div>
+
+        <div class="field"><label for="edit_remark">Remarks</label><textarea id="edit_remark" name="remark" rows="3"></textarea></div>
+        <div class="field"><label for="edit_updated_by">Updated By (optional)</label><input id="edit_updated_by" name="updated_by" /></div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn-ghost btn" id="cancelEdit">Cancel</button>
+          <button type="submit" class="btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // API endpoints
+    const API_TANK = "http://127.0.0.1:8000/api/tank-details";
+    const API_REG = "http://127.0.0.1:8000/api/regulations";
+    const API_TANK_REG = "http://127.0.0.1:8000/api/regulations_tank";
+    const API_CARGO = "http://127.0.0.1:8000/api/cargo_tank";
+
+    // Elements
+    const tankTableBody = document.querySelector("#tankTable tbody");
+    const regulationSelect = document.getElementById("regulationSelect");
+    const regulationText = document.getElementById("regulationText");
+
+    const addModal = document.getElementById("addModal");
+    const editModal = document.getElementById("editModal");
+    const regModal = document.getElementById("regModal");
+
+    const addForm = document.getElementById("addForm");
+    const editForm = document.getElementById("editForm");
+    const regForm = document.getElementById("regForm");
+
+    let editRegId = null;
+
+    // Helpers: show/hide modals and set aria attributes
+    function showModal(modal){
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden","false");
+      // trap focus could be added
+    }
+    function hideModal(modal){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
+    }
+
+    // Tab handling (shared between add modal tabs)
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+        btn.classList.add("active");
+        const tabId = btn.getAttribute("data-tab");
+        const tabEl = document.getElementById(tabId);
+        if(tabEl) tabEl.classList.add("active");
+
+        if(tabId === "regulations"){
+          // load regulations for the tab view
+          loadRegulations().catch(err => console.error(err));
+          // autopopulate tank number from Tank tab
+          const tankNumber = document.getElementById('edit_id') && document.getElementById('edit_id').value ?
+            document.getElementById('edit_tank_number').value :
+            document.getElementById('add_tank_number').value;
+          document.getElementById('tankNumberDisplay').value = tankNumber || '';
+          // load tank regulations for the table
+          const tankId = document.getElementById('edit_id') && document.getElementById('edit_id').value ?
+            document.getElementById('edit_id').value :
+            document.getElementById('add_tank_id').value;
+          loadTankRegulations(tankId).catch(err => console.error(err));
+        }
+
+        if(tabId === "cargo"){
+          // autopopulate tank number from Tank tab
+          const tankNumber = document.getElementById('edit_id') && document.getElementById('edit_id').value ?
+            document.getElementById('edit_tank_number').value :
+            document.getElementById('add_tank_number').value;
+          document.getElementById('cargoTankNumberDisplay').value = tankNumber || '';
+          // load cargo references for the table
+          const tankId = document.getElementById('edit_id') && document.getElementById('edit_id').value ?
+            document.getElementById('edit_id').value :
+            document.getElementById('add_tank_id').value;
+          loadCargoReferences(tankId).catch(err => console.error(err));
+        }
+      });
+    });
+
+    // Modal buttons
+    document.getElementById("btnNewTank").addEventListener("click", () => {
+      addForm.reset();
+      // ensure tank tab active
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      document.querySelector('.tab-btn[data-tab="tank"]').classList.add("active");
+      document.getElementById('tank').classList.add("active");
+
+      showModal(addModal);
+      document.getElementById("add_tank_number").focus();
+    });
+    document.getElementById("closeAddBtn").addEventListener("click", () => hideModal(addModal));
+    document.getElementById("cancelAdd").addEventListener("click", () => hideModal(addModal));
+
+    document.getElementById("closeEditBtn").addEventListener("click", () => hideModal(editModal));
+    document.getElementById("cancelEdit").addEventListener("click", () => hideModal(editModal));
+
+    document.getElementById("closeRegBtn").addEventListener("click", () => { hideModal(regModal); editRegId = null; regForm.reset(); });
+    document.getElementById("cancelReg").addEventListener("click", () => { hideModal(regModal); editRegId = null; regForm.reset(); });
+
+    // close modals on click outside
+    window.addEventListener("click", (e) => {
+      if(e.target === addModal) hideModal(addModal);
+      if(e.target === editModal) hideModal(editModal);
+      if(e.target === regModal) hideModal(regModal);
+    });
+
+    // --------- Utility functions ----------
+    function parseFloatOrNull(v){
+      if(v === null || v === undefined || String(v).trim() === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+    function escapeHtml(text){
+      if(text === null || text === undefined) return "";
+      return String(text)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function setTableLoading(tb, colspan = 5, message = "Loading…"){
+      tb.innerHTML = "";
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = colspan;
+      td.style.padding = "18px";
+      td.style.textAlign = "center";
+      td.style.color = "#6b5a86";
+      td.textContent = message;
+      tr.appendChild(td);
+      tb.appendChild(tr);
+    }
+
+    // ---------- Tanks ----------
+    async function loadTanks(){
+      setTableLoading(tankTableBody, 5, "Loading…");
+      try{
+        const res = await fetch(`${API_TANK}/`);
+        if(!res.ok) throw new Error('Failed to fetch tanks: ' + res.status + ' ' + res.statusText);
+        const data = await res.json();
+        if(!Array.isArray(data) || data.length === 0){
+          setTableLoading(tankTableBody, 5, "No tanks found.");
+          return;
+        }
+        tankTableBody.innerHTML = "";
+        data.forEach(t => {
+          const tr = document.createElement("tr");
+
+          const tdNum = document.createElement("td");
+          tdNum.innerHTML = escapeHtml(t.tank_number ?? '');
+          tr.appendChild(tdNum);
+
+          const tdPv = document.createElement("td");
+          tdPv.innerHTML = escapeHtml(t.pv_code ?? '');
+          tr.appendChild(tdPv);
+
+          const tdUn = document.createElement("td");
+          tdUn.innerHTML = escapeHtml(t.un_iso_code ?? '');
+          tr.appendChild(tdUn);
+
+          const tdCap = document.createElement("td");
+          tdCap.textContent = t.capacity_l != null ? String(t.capacity_l) : '';
+          tr.appendChild(tdCap);
+
+          const tdActions = document.createElement("td");
+          tdActions.className = "actions";
+
+          const btnEdit = document.createElement("button");
+          btnEdit.className = "btn-ghost btn";
+          btnEdit.type = "button";
+          btnEdit.setAttribute("aria-label", `Edit tank ${t.tank_number ?? ''}`);
+          btnEdit.textContent = "✏ Edit";
+          btnEdit.addEventListener("click", () => onEdit(t.id));
+          tdActions.appendChild(btnEdit);
+
+          const btnDelete = document.createElement("button");
+          btnDelete.className = "btn btn-danger";
+          btnDelete.type = "button";
+          btnDelete.setAttribute("aria-label", `Delete tank ${t.tank_number ?? ''}`);
+          btnDelete.textContent = "🗑 Delete";
+          btnDelete.addEventListener("click", () => onDelete(t.id));
+          tdActions.appendChild(btnDelete);
+
+          tr.appendChild(tdActions);
+          tankTableBody.appendChild(tr);
+        });
+      }catch(err){
+        console.error(err);
+        setTableLoading(tankTableBody, 5, "Error loading tanks");
+      }
+    }
+
+    // Add Tank
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        tank_number: document.getElementById('add_tank_number').value.trim(),
+        mfgr: document.getElementById('add_mfgr').value.trim(),
+        date_mfg: document.getElementById('add_date_mfg').value || null,
+        pv_code: document.getElementById('add_pv_code').value.trim(),
+        un_iso_code: document.getElementById('add_un_iso_code').value.trim(),
+        capacity_l: parseFloatOrNull(document.getElementById('add_capacity_l').value),
+        mawp: parseFloatOrNull(document.getElementById('add_mawp').value),
+        design_temperature: document.getElementById('add_design_temperature').value.trim() || null,
+        tare_weight_kg: parseFloatOrNull(document.getElementById('add_tare_weight_kg').value),
+        mgw_kg: parseFloatOrNull(document.getElementById('add_mgw_kg').value),
+        mpl_kg: parseFloatOrNull(document.getElementById('add_mpl_kg').value),
+        size: document.getElementById('add_size').value.trim(),
+        pump_type: document.getElementById('add_pump_type').value.trim(),
+        vesmat: document.getElementById('add_vesmat').value.trim(),
+        gross_kg: parseFloatOrNull(document.getElementById('add_gross_kg').value),
+        net_kg: parseFloatOrNull(document.getElementById('add_net_kg').value),
+        color_body_frame: document.getElementById('add_color_body_frame').value.trim(),
+        lease: document.getElementById('add_lease').checked ? 1 : 0,
+        remark: document.getElementById('add_remark').value.trim(),
+        created_by: document.getElementById('add_created_by').value.trim() || undefined
+      };
+
+      try{
+        const res = await fetch(`${API_TANK}/`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({detail:res.statusText}));
+          throw new Error(err.detail || res.statusText);
+        }
+        const data = await res.json();
+        document.getElementById('add_tank_id').value = data.tank_id;
+        alert("Tank saved successfully!");
+        await loadTanks();
+      }catch(err){
+        alert('Create failed: ' + (err.message || err));
+        console.error(err);
+      }
+    });
+
+    // Edit Tank (open)
+    async function onEdit(id){
+      try{
+        const res = await fetch(`${API_TANK}/${id}`);
+        if(!res.ok) throw new Error('Could not fetch tank: ' + res.status);
+        const t = await res.json();
+
+        // populate edit form
+        document.getElementById('edit_id').value = t.id ?? '';
+        document.getElementById('edit_tank_number').value = t.tank_number ?? '';
+        document.getElementById('edit_mfgr').value = t.mfgr ?? '';
+        document.getElementById('edit_date_mfg').value = t.date_mfg ?? '';
+        document.getElementById('edit_pv_code').value = t.pv_code ?? '';
+        document.getElementById('edit_un_iso_code').value = t.un_iso_code ?? '';
+        document.getElementById('edit_capacity_l').value = t.capacity_l ?? '';
+        document.getElementById('edit_mawp').value = t.mawp ?? '';
+        document.getElementById('edit_design_temperature').value = t.design_temperature ?? '';
+        document.getElementById('edit_tare_weight_kg').value = t.tare_weight_kg ?? '';
+        document.getElementById('edit_mgw_kg').value = t.mgw_kg ?? '';
+        document.getElementById('edit_mpl_kg').value = t.mpl_kg ?? '';
+        document.getElementById('edit_size').value = t.size ?? '';
+        document.getElementById('edit_pump_type').value = t.pump_type ?? '';
+        document.getElementById('edit_vesmat').value = t.vesmat ?? '';
+        document.getElementById('edit_gross_kg').value = t.gross_kg ?? '';
+        document.getElementById('edit_net_kg').value = t.net_kg ?? '';
+        document.getElementById('edit_color_body_frame').value = t.color_body_frame ?? '';
+        document.getElementById('edit_remark').value = t.remark ?? '';
+        document.getElementById('edit_lease').checked = t.lease === 1 || t.lease === true;
+        document.getElementById('edit_updated_by').value = t.updated_by ?? t.created_by ?? '';
+
+        showModal(editModal);
+        document.getElementById('edit_tank_number').focus();
+      }catch(err){
+        alert('Unable to open edit modal: ' + (err.message || err));
+        console.error(err);
+      }
+    }
+
+    // Edit submit
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit_id').value;
+      if(!id) return alert('Missing tank id');
+
+      const payload = {
+        tank_number: document.getElementById('edit_tank_number').value.trim(),
+        mfgr: document.getElementById('edit_mfgr').value.trim(),
+        date_mfg: document.getElementById('edit_date_mfg').value || null,
+        pv_code: document.getElementById('edit_pv_code').value.trim(),
+        un_iso_code: document.getElementById('edit_un_iso_code').value.trim(),
+        capacity_l: parseFloatOrNull(document.getElementById('edit_capacity_l').value),
+        mawp: parseFloatOrNull(document.getElementById('edit_mawp').value),
+        design_temperature: document.getElementById('edit_design_temperature').value.trim() || null,
+        tare_weight_kg: parseFloatOrNull(document.getElementById('edit_tare_weight_kg').value),
+        mgw_kg: parseFloatOrNull(document.getElementById('edit_mgw_kg').value),
+        mpl_kg: parseFloatOrNull(document.getElementById('edit_mpl_kg').value),
+        size: document.getElementById('edit_size').value.trim(),
+        pump_type: document.getElementById('edit_pump_type').value.trim(),
+        vesmat: document.getElementById('edit_vesmat').value.trim(),
+        gross_kg: parseFloatOrNull(document.getElementById('edit_gross_kg').value),
+        net_kg: parseFloatOrNull(document.getElementById('edit_net_kg').value),
+        color_body_frame: document.getElementById('edit_color_body_frame').value.trim(),
+        remark: document.getElementById('edit_remark').value.trim(),
+        lease: document.getElementById('edit_lease').checked ? 1 : 0,
+        updated_by: document.getElementById('edit_updated_by').value.trim() || undefined
+      };
+
+      try{
+        const res = await fetch(`${API_TANK}/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({detail:res.statusText}));
+          throw new Error(err.detail || res.statusText);
+        }
+        hideModal(editModal);
+        await loadTanks();
+      }catch(err){
+        alert('Save failed: ' + (err.message || err));
+        console.error(err);
+      }
+    });
+
+    // Delete
+    async function onDelete(id){
+      if(!confirm('Delete this tank?')) return;
+      try{
+        const res = await fetch(`${API_TANK}/${id}`, { method:'DELETE' });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({detail:res.statusText}));
+          throw new Error(err.detail || res.statusText);
+        }
+        await loadTanks();
+      }catch(err){
+        alert('Delete failed: ' + (err.message || err));
+        console.error(err);
+      }
+    }
+
+    // ---------- Regulations ----------
+    async function loadRegulations(){
+      try{
+        const res = await fetch(`${API_REG}/`);
+        if(!res.ok) throw new Error('Failed to load regulations: ' + res.status);
+        const data = await res.json();
+        regulationSelect.innerHTML = '<option value="">Choose a regulation</option>';
+        if(!Array.isArray(data) || data.length === 0){
+          return;
+        }
+        data.forEach(r => {
+          const option = document.createElement("option");
+          option.value = r.id;
+          option.textContent = r.regulation_name ?? '';
+          regulationSelect.appendChild(option);
+        });
+      }catch(err){
+        console.error('Error loading regulations:', err);
+      }
+    }
+
+    // ---------- Cargo ----------
+    async function loadCargoReferences(tankId){
+      const cargoTableBody = document.querySelector("#cargoTable tbody");
+      if(!tankId){
+        cargoTableBody.innerHTML = "<tr><td colspan='2'>No tank selected</td></tr>";
+        return;
+      }
+      try{
+        const res = await fetch(`${API_CARGO}/tank/${tankId}`);
+        if(!res.ok) throw new Error('Failed to load cargo references: ' + res.status);
+        const data = await res.json();
+        cargoTableBody.innerHTML = "";
+        if(!Array.isArray(data) || data.length === 0){
+          cargoTableBody.innerHTML = "<tr><td colspan='2'>No cargo references found</td></tr>";
+          return;
+        }
+        data.forEach(c => {
+          const tr = document.createElement("tr");
+          const tdRef = document.createElement("td");
+          tdRef.textContent = c.cargo_reference ?? '';
+          tr.appendChild(tdRef);
+          const tdActions = document.createElement("td");
+          const btnDelete = document.createElement("button");
+          btnDelete.className = "btn btn-danger";
+          btnDelete.type = "button";
+          btnDelete.textContent = "🗑 Delete";
+          btnDelete.addEventListener("click", async () => {
+            if(!confirm('Delete this cargo reference?')) return;
+            try{
+              const deleteRes = await fetch(`${API_CARGO}/${c.id}`, { method: 'DELETE' });
+              if(!deleteRes.ok) throw new Error('Failed to delete');
+              alert("Deleted successfully!");
+              loadCargoReferences(tankId).catch(err => console.error(err));
+            }catch(err){
+              alert('Delete failed: ' + err.message);
+              console.error(err);
+            }
+          });
+          tdActions.appendChild(btnDelete);
+          tr.appendChild(tdActions);
+          cargoTableBody.appendChild(tr);
+        });
+      }catch(err){
+        console.error('Error loading cargo references:', err);
+        cargoTableBody.innerHTML = "<tr><td colspan='2'>Error loading cargo references</td></tr>";
+      }
+    }
+
+    // Save Cargo References
+    document.getElementById("btnSaveCargo").addEventListener("click", async () => {
+      const tankId = document.getElementById("add_tank_id").value || document.getElementById("edit_id").value;
+      const cargoRefsText = document.getElementById("cargoReferences").value.trim();
+
+      if (!tankId) {
+        alert("Please select a tank.");
+        return;
+      }
+      if (!cargoRefsText) {
+        alert("Please enter cargo references.");
+        return;
+      }
+
+      const cargoRefs = cargoRefsText.split(',').map(ref => ref.trim()).filter(ref => ref);
+
+      if (cargoRefs.length === 0) {
+        alert("No valid cargo references entered.");
+        return;
+      }
+
+      try {
+        const promises = cargoRefs.map(ref => {
+          const payload = {
+            tank_id: tankId,
+            cargo_reference: ref
+          };
+          return fetch(`${API_CARGO}/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+          });
+        });
+
+        const results = await Promise.all(promises);
+        const failed = results.filter(res => !res.ok);
+        if (failed.length > 0) {
+          throw new Error('Some cargo references failed to save');
+        }
+
+        alert("Cargo references saved successfully!");
+        // Reload the cargo table
+        loadCargoReferences(tankId).catch(err => console.error(err));
+        // Reset form
+        document.getElementById("cargoReferences").value = "";
+      } catch (err) {
+        alert('Save failed: ' + (err.message || err));
+        console.error(err);
+      }
+    });
+
+    // Load tank regulations for the table
+    async function loadTankRegulations(tankId){
+      const regulationsTableBody = document.querySelector("#regulationsTable tbody");
+      if(!tankId){
+        regulationsTableBody.innerHTML = "<tr><td colspan='3'>No tank selected</td></tr>";
+        return;
+      }
+      try{
+        const res = await fetch(`${API_TANK_REG}/tank/${tankId}`);
+        if(!res.ok) throw new Error('Failed to load tank regulations: ' + res.status);
+        const data = await res.json();
+        regulationsTableBody.innerHTML = "";
+        if(!Array.isArray(data) || data.length === 0){
+          regulationsTableBody.innerHTML = "<tr><td colspan='3'>No regulations found</td></tr>";
+          return;
+        }
+        data.forEach(r => {
+          const tr = document.createElement("tr");
+          const tdName = document.createElement("td");
+          tdName.textContent = r.regulation_name ?? '';
+          tr.appendChild(tdName);
+          const tdApproval = document.createElement("td");
+          const inputApproval = document.createElement("input");
+          inputApproval.type = "text";
+          inputApproval.value = r.initial_approval_no ?? '';
+          inputApproval.style.width = "100%";
+          inputApproval.style.border = "1px solid #ddd";
+          inputApproval.style.padding = "4px";
+          inputApproval.addEventListener("blur", async () => {
+            const newValue = inputApproval.value.trim();
+            try{
+              const updateRes = await fetch(`${API_TANK_REG}/${r.id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ initial_approval_no: newValue || null, updated_by: "user" })
+              });
+              if(!updateRes.ok) throw new Error('Failed to update');
+              alert("Updated successfully!");
+            }catch(err){
+              alert('Update failed: ' + err.message);
+              console.error(err);
+            }
+          });
+          tdApproval.appendChild(inputApproval);
+          tr.appendChild(tdApproval);
+          const tdActions = document.createElement("td");
+          const btnDelete = document.createElement("button");
+          btnDelete.className = "btn btn-danger";
+          btnDelete.type = "button";
+          btnDelete.textContent = "🗑 Delete";
+          btnDelete.addEventListener("click", async () => {
+            if(!confirm('Delete this regulation?')) return;
+            try{
+              const deleteRes = await fetch(`${API_TANK_REG}/${r.id}`, { method: 'DELETE' });
+              if(!deleteRes.ok) throw new Error('Failed to delete');
+              alert("Deleted successfully!");
+              loadTankRegulations(tankId).catch(err => console.error(err));
+            }catch(err){
+              alert('Delete failed: ' + err.message);
+              console.error(err);
+            }
+          });
+          tdActions.appendChild(btnDelete);
+          tr.appendChild(tdActions);
+          regulationsTableBody.appendChild(tr);
+        });
+      }catch(err){
+        console.error('Error loading tank regulations:', err);
+        regulationsTableBody.innerHTML = "<tr><td colspan='3'>Error loading regulations</td></tr>";
+      }
+    }
+
+    // Load tanks for select dropdown
+    async function loadTanksForSelect(){
+      try{
+        const res = await fetch(`${API_TANK}/`);
+        if(!res.ok) throw new Error('Failed to load tanks: ' + res.status);
+        const data = await res.json();
+        const tankSelect = document.getElementById("tankSelect");
+        tankSelect.innerHTML = '<option value="">Choose a tank</option>';
+        if(!Array.isArray(data) || data.length === 0){
+          return;
+        }
+        data.forEach(t => {
+          const option = document.createElement("option");
+          option.value = t.id;
+          option.textContent = t.tank_number ?? '';
+          tankSelect.appendChild(option);
+        });
+      }catch(err){
+        console.error('Error loading tanks for select:', err);
+      }
+    }
+
+    // Event listener for regulation select
+    regulationSelect.addEventListener("change", () => {
+      if(regulationSelect.value){
+        regulationText.style.display = "block";
+      }else{
+        regulationText.style.display = "none";
+        regulationText.value = "";
+      }
+    });
+
+    // open regulation modal from tank modal
+    document.getElementById("btnNewRegFromTank").addEventListener("click", () => {
+      editRegId = null;
+      document.getElementById('regForm').reset();
+      document.getElementById('regModalTitle').textContent = 'Add Regulation';
+      showModal(regModal);
+      document.getElementById('reg_name').focus();
+    });
+
+    // open regulation modal directly (if you want a separate button elsewhere)
+    // document.getElementById("btnOpenRegs")?.addEventListener("click", () => { loadRegulations(); showModal(addModal); });
+
+    // handle reg submit (create / update)
+    regForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('reg_name').value.trim();
+      if(!name) return alert('Enter regulation name');
+      const payload = { regulation_name: name };
+      try{
+        const url = editRegId ? `${API_REG}/${editRegId}` : `${API_REG}/`;
+        const method = editRegId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({detail:res.statusText}));
+          throw new Error(err.detail || res.statusText);
+        }
+        hideModal(regModal);
+        editRegId = null;
+        await loadRegulations();
+      }catch(err){
+        alert('Save regulation failed: ' + (err.message || err));
+        console.error(err);
+      }
+    });
+
+    // delete regulation
+    async function deleteReg(id){
+      if(!confirm('Delete this regulation?')) return;
+      try{
+        const res = await fetch(`${API_REG}/${id}`, { method:'DELETE' });
+        if(!res.ok){
+          const err = await res.json().catch(()=>({detail:res.statusText}));
+          throw new Error(err.detail || res.statusText);
+        }
+        await loadRegulations();
+      }catch(err){
+        alert('Delete failed: ' + (err.message || err));
+        console.error(err);
+      }
+    }
+
+    // Save Regulation
+    document.getElementById("btnSaveRegulation").addEventListener("click", async () => {
+      const tankId = document.getElementById("add_tank_id").value;
+      const regulationId = regulationSelect.value;
+      const details = regulationText.value.trim();
+
+      if (!tankId) {
+        alert("Please select a tank.");
+        return;
+      }
+      if (!regulationId) {
+        alert("Please select a regulation.");
+        return;
+      }
+
+      const payload = {
+        tank_id: tankId,
+        regulation_id: regulationId,
+        initial_approval_no: details || null
+      };
+
+      try {
+        const res = await fetch(`${API_TANK_REG}/`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: res.statusText }));
+          throw new Error(err.detail || res.statusText);
+        }
+        alert("Regulation saved successfully!");
+        // Reload the regulations table
+        const tankId = document.getElementById("add_tank_id").value;
+        loadTankRegulations(tankId).catch(err => console.error(err));
+        // Reset form
+        regulationSelect.value = "";
+        regulationText.value = "";
+        regulationText.style.display = "none";
+      } catch (err) {
+        alert('Save failed: ' + (err.message || err));
+        console.error(err);
+      }
+    });
+
+    // Initial load
+    (async function init(){
+      await loadTanks();
+      // loadRegulations(); // only when tab opened
+    })();
+  </script>
+</body>
+</html>
